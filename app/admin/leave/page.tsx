@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { TablePageSkeleton } from '@/components/skeletons';
 import { Calendar, CheckCircle, XCircle, Clock, Filter, MessageSquare } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface LeaveRequest {
   id: string;
@@ -67,8 +69,14 @@ export default function AdminLeavePage() {
       });
 
       if (res.ok) {
+        toast.success(`Leave request ${modalAction === 'approve' ? 'approved' : 'rejected'}`, {
+          description: `${selectedLeave.employeeName}'s ${selectedLeave.leaveType} leave`,
+        });
         setShowModal(false);
         refetch();
+      } else {
+        const data = await res.json();
+        toast.error('Action failed', { description: data.error });
       }
     } catch (err) {
       console.error('Action failed:', err);
@@ -132,14 +140,7 @@ export default function AdminLeavePage() {
 
           {/* Leave requests table */}
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-card border border-border rounded-lg p-6 animate-pulse">
-                  <div className="h-4 bg-muted rounded w-1/3"></div>
-                  <div className="h-3 bg-muted rounded w-1/2 mt-2"></div>
-                </div>
-              ))}
-            </div>
+            <TablePageSkeleton />
           ) : (
             <div className="bg-card rounded-lg border border-border overflow-hidden">
               <div className="overflow-x-auto">

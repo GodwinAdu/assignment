@@ -3,6 +3,7 @@
 import { EmployeeSidebar } from '@/components/employee/Sidebar';
 import { Header } from '@/components/Header';
 import { useFetch } from '@/hooks/useFetch';
+import { PerformanceSkeleton } from '@/components/skeletons';
 import { TrendingUp, Award, Target, Clock, Loader2 } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 
@@ -44,9 +45,7 @@ export default function EmployeePerformancePage() {
         <Header title="My Performance" subtitle="View your performance metrics and scores." />
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <PerformanceSkeleton />
         ) : (
           <div className="p-6 space-y-6">
             {performance ? (

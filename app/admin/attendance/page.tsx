@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { TablePageSkeleton } from '@/components/skeletons';
 import { Calendar, Download, Filter } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface AttendanceRecord {
   id: string;
@@ -64,9 +66,12 @@ export default function AttendancePage() {
         a.download = `attendance-${selectedDate}.xlsx`;
         a.click();
         URL.revokeObjectURL(url);
+        toast.success('Attendance exported', { description: `File: attendance-${selectedDate}.xlsx` });
+      } else {
+        toast.error('Export failed');
       }
     } catch (err) {
-      console.error('Export failed:', err);
+      toast.error('Export failed', { description: 'Network error.' });
     }
   };
 
@@ -149,13 +154,7 @@ export default function AttendancePage() {
           </div>
 
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-card border border-border rounded-lg p-6 animate-pulse">
-                  <div className="h-4 bg-muted rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
+            <TablePageSkeleton />
           ) : error ? (
             <div className="text-center py-12 text-destructive">{error.message}</div>
           ) : (

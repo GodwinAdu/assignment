@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { TablePageSkeleton } from '@/components/skeletons';
 import { Trophy, TrendingUp, Award, BarChart3 } from 'lucide-react';
 
 interface PerformanceEmployee {
@@ -126,13 +127,7 @@ export default function PerformancePage() {
           </div>
 
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-card border border-border rounded-lg p-6 animate-pulse">
-                  <div className="h-4 bg-muted rounded w-1/3"></div>
-                </div>
-              ))}
-            </div>
+            <TablePageSkeleton />
           ) : error ? (
             <div className="text-center py-12 text-destructive">{error.message}</div>
           ) : (

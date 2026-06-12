@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { EmployeeSidebar } from '@/components/employee/Sidebar';
 import { Header } from '@/components/Header';
+import { CheckInSkeleton } from '@/components/skeletons';
 import { MapPin, AlertTriangle, CheckCircle, MapIcon, Loader2, QrCode, Camera, Clock, LogIn, LogOut, Smartphone } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function AttendancePage() {
   const [selectedMethod, setSelectedMethod] = useState<'gps' | 'qr' | 'manual'>('gps');
@@ -73,10 +75,14 @@ export default function AttendancePage() {
           if (res.ok) {
             setCheckInStatus('success');
             setStatusMessage(`Check-in successful! Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            toast.success(result.isLate ? 'Checked in (marked as late)' : 'GPS Check-in successful!', {
+              description: `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+            });
             fetchTodayStatus();
           } else {
             setCheckInStatus('error');
             setStatusMessage(result.error || 'Check-in failed');
+            toast.error('Check-in failed', { description: result.error });
           }
         } catch {
           setCheckInStatus('error');
@@ -121,10 +127,14 @@ export default function AttendancePage() {
           if (res.ok) {
             setCheckInStatus('success');
             setStatusMessage(`Check-out successful! Hours worked: ${result.hoursWorked?.toFixed(1)}h`);
+            toast.success('Check-out successful!', {
+              description: `Hours worked today: ${result.hoursWorked?.toFixed(1)}h`,
+            });
             fetchTodayStatus();
           } else {
             setCheckInStatus('error');
             setStatusMessage(result.error || 'Check-out failed');
+            toast.error('Check-out failed', { description: result.error });
           }
         } catch {
           setCheckInStatus('error');

@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { EmployeeSidebar } from '@/components/employee/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { TablePageSkeleton } from '@/components/skeletons';
 import { Plus, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface LeaveRecord {
   _id: string;
@@ -83,12 +85,17 @@ export default function LeavePage() {
       if (res.ok) {
         setShowNewLeaveForm(false);
         setFormData({ leaveType: 'casual', startDate: '', endDate: '', reason: '' });
+        toast.success('Leave request submitted', {
+          description: 'Your request is pending admin approval.',
+        });
         refetch();
       } else {
         setSubmitError(result.error || 'Failed to submit leave request');
+        toast.error('Submission failed', { description: result.error });
       }
     } catch {
       setSubmitError('Network error. Please try again.');
+      toast.error('Network error', { description: 'Please try again.' });
     } finally {
       setSubmitting(false);
     }
@@ -117,9 +124,7 @@ export default function LeavePage() {
         <div className="p-6 space-y-6">
           {/* Leave Requests */}
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            </div>
+            <TablePageSkeleton />
           ) : error ? (
             <div className="text-center py-12 text-destructive">{error.message}</div>
           ) : leaves.length === 0 ? (

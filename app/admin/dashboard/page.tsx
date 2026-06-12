@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { Header } from '@/components/Header';
 import { useFetch } from '@/hooks/useFetch';
+import { DashboardSkeleton } from '@/components/skeletons';
 import { TrendingUp, Users, Calendar, TrendingDown, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -74,16 +75,7 @@ export default function AdminDashboard() {
         )}
 
         {loading ? (
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-card border border-border rounded-lg p-6 animate-pulse">
-                  <div className="h-4 bg-muted rounded w-1/2"></div>
-                  <div className="h-8 bg-muted rounded mt-2 w-1/3"></div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <DashboardSkeleton />
         ) : (
           <div className="p-6 space-y-6">
             {/* Stats Grid */}

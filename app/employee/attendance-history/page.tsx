@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { EmployeeSidebar } from '@/components/employee/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { TablePageSkeleton } from '@/components/skeletons';
 import { Download, Calendar, Loader2 } from 'lucide-react';
 
 interface AttendanceRecord {
@@ -96,9 +97,7 @@ export default function AttendanceHistoryPage() {
 
           {/* Attendance Table */}
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            </div>
+            <TablePageSkeleton />
           ) : error ? (
             <div className="text-center py-12 text-destructive">{error.message}</div>
           ) : (

@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { SettingsSkeleton } from '@/components/skeletons';
 import { MapPin, Clock, Building2, Loader2, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -53,10 +55,16 @@ export default function SettingsPage() {
       });
       if (res.ok) {
         setSaved(true);
+        toast.success('Settings saved successfully', {
+          description: 'All changes have been applied.',
+        });
         setTimeout(() => setSaved(false), 3000);
+      } else {
+        const data = await res.json();
+        toast.error('Failed to save settings', { description: data.error });
       }
     } catch (err) {
-      console.error('Save failed:', err);
+      toast.error('Network error', { description: 'Could not save settings.' });
     } finally {
       setSaving(false);
     }
@@ -66,8 +74,12 @@ export default function SettingsPage() {
     return (
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 bg-background flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        <main className="flex-1 bg-background min-h-screen">
+          <div className="border-b border-border p-6">
+            <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+            <p className="text-muted-foreground mt-1">Configure company and attendance system settings.</p>
+          </div>
+          <SettingsSkeleton />
         </main>
       </div>
     );

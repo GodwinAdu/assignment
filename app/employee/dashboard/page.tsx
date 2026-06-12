@@ -1,11 +1,13 @@
-'use client';
+    'use client';
 
 import { useEffect, useState } from 'react';
 import { EmployeeSidebar } from '@/components/employee/Sidebar';
 import { Header } from '@/components/Header';
 import { useFetch } from '@/hooks/useFetch';
+import { DashboardSkeleton } from '@/components/skeletons';
 import { Clock, CheckCircle, AlertCircle, Calendar, TrendingUp, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { toast } from 'sonner';
 
 export default function EmployeeDashboard() {
   const [currentTime, setCurrentTime] = useState('');
@@ -34,9 +36,17 @@ export default function EmployeeDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ checkInMethod: 'manual' }),
       });
-      if (res.ok) refetch();
+      const result = await res.json();
+      if (res.ok) {
+        toast.success(result.isLate ? 'Checked in (marked as late)' : 'Check-in successful!', {
+          description: `Time: ${new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`,
+        });
+        refetch();
+      } else {
+        toast.error('Check-in failed', { description: result.error });
+      }
     } catch (err) {
-      console.error('Check-in failed:', err);
+      toast.error('Network error', { description: 'Please try again.' });
     } finally {
       setChecking(null);
     }
@@ -50,9 +60,17 @@ export default function EmployeeDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       });
-      if (res.ok) refetch();
+      const result = await res.json();
+      if (res.ok) {
+        toast.success('Check-out successful!', {
+          description: `Hours worked: ${result.hoursWorked?.toFixed(1)}h`,
+        });
+        refetch();
+      } else {
+        toast.error('Check-out failed', { description: result.error });
+      }
     } catch (err) {
-      console.error('Check-out failed:', err);
+      toast.error('Network error', { description: 'Please try again.' });
     } finally {
       setChecking(null);
     }
@@ -81,9 +99,7 @@ export default function EmployeeDashboard() {
         <Header title="My Dashboard" subtitle={`Welcome back, ${data?.user?.name || ''}!`} />
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <DashboardSkeleton />
         ) : (
           <div className="p-6 space-y-6">
             {/* Check-in Panel */}

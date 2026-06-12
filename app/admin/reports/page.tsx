@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { ReportsSkeleton } from '@/components/skeletons';
 import { Download, Printer, TrendingUp, Users, Clock, Calendar, Trophy, Loader2 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { toast } from 'sonner';
 
 interface ReportData {
   month: string;
@@ -57,9 +59,14 @@ export default function ReportsPage() {
         a.download = `report-${selectedMonth}.${type === 'pdf' ? 'pdf' : 'xlsx'}`;
         a.click();
         URL.revokeObjectURL(url);
+        toast.success(`${type.toUpperCase()} report downloaded`, {
+          description: `Report for ${selectedMonth}`,
+        });
+      } else {
+        toast.error('Export failed', { description: 'Please try again.' });
       }
     } catch (err) {
-      console.error('Export failed:', err);
+      toast.error('Export failed', { description: 'Network error.' });
     } finally {
       setGenerating(null);
     }
@@ -117,9 +124,7 @@ export default function ReportsPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
+          <ReportsSkeleton />
         ) : data ? (
           <div className="p-6 space-y-6 print:p-2">
             {/* Report title */}

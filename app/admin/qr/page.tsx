@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { useFetch } from '@/hooks/useFetch';
+import { QRPageSkeleton } from '@/components/skeletons';
 import { QrCode, Download, Printer, RefreshCw, CheckCircle, Copy, ExternalLink, Users, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function AdminQRPage() {
   const [regenerating, setRegenerating] = useState(false);
@@ -26,14 +28,21 @@ export default function AdminQRPage() {
     if (!confirm('⚠️ This will invalidate the current QR code.\n\nAll printed QR codes will stop working immediately.\n\nContinue?')) return;
     setRegenerating(true);
     try {
-      await window.fetch('/api/admin/qr', {
+      const res = await window.fetch('/api/admin/qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ label: newLabel || 'Main Entrance' }),
       });
-      refetch();
+      if (res.ok) {
+        toast.success('QR code regenerated', {
+          description: 'Old QR codes are now invalid. Please reprint.',
+        });
+        refetch();
+      } else {
+        toast.error('Failed to regenerate QR code');
+      }
     } catch (err) {
-      console.error('Regenerate failed:', err);
+      toast.error('Network error');
     } finally {
       setRegenerating(false);
     }
@@ -42,6 +51,7 @@ export default function AdminQRPage() {
   const handleCopy = () => {
     navigator.clipboard.writeText(data?.activeQR?.checkinUrl || '');
     setCopied(true);
+    toast.success('URL copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -115,9 +125,7 @@ export default function AdminQRPage() {
 
         <div className="p-6">
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
+            <QRPageSkeleton />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Left: QR Display */}
