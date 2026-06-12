@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IPerformance extends Document {
-  _id: string;
   userId: string;
   month: Date;
   attendanceRate: number; // 0-100

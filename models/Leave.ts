@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ILeave extends Document {
-  _id: string;
   userId: string;
   leaveType: 'sick' | 'casual' | 'personal' | 'emergency' | 'other';
   startDate: Date;

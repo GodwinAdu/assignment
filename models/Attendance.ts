@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IAttendance extends Document {
-  _id: string;
   userId: string;
   date: Date;
   checkInTime?: Date;

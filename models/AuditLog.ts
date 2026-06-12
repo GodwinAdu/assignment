@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IAuditLog extends Document {
-  _id: string;
   userId: string;
   action: string;
   actionType: 'create' | 'read' | 'update' | 'delete' | 'login' | 'logout';

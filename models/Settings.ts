@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface ISettings extends Document {
-  _id: string;
   companyName: string;
   officeLocation: {
     latitude: number;
