@@ -38,9 +38,23 @@ export default function NotificationsPage() {
         setNotifications(
           notifications.map((n) => (n._id === id ? { ...n, isRead: true } : n))
         );
+        toast.success('Marked as read');
       }
     } catch (error) {
       console.error('[v0] Error marking as read:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const unread = notifications.filter((n) => !n.isRead);
+      await Promise.all(
+        unread.map((n) => fetch(`/api/notifications/${n._id}`, { method: 'PATCH' }))
+      );
+      setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
+      toast.success(`${unread.length} notifications marked as read`);
+    } catch (error) {
+      toast.error('Failed to mark all as read');
     }
   };
 
@@ -65,6 +79,18 @@ export default function NotificationsPage() {
       />
 
       <div className="max-w-4xl mx-auto p-6 space-y-4">
+        {/* Actions bar */}
+        {notifications.length > 0 && notifications.some((n) => !n.isRead) && (
+          <div className="flex justify-end">
+            <button
+              onClick={handleMarkAllAsRead}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
+            >
+              <CheckCircle size={16} />
+              Mark all as read
+            </button>
+          </div>
+        )}
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (

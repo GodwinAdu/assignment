@@ -44,9 +44,25 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     setSaving(true);
-    // For now just toggle editing off - you can add a profile update API later
-    setIsEditing(false);
-    setSaving(false);
+    try {
+      const res = await window.fetch('/api/employee/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to update profile');
+      
+      const { toast } = await import('sonner');
+      toast.success('Profile updated successfully!');
+      setIsEditing(false);
+      refetch();
+    } catch (err) {
+      const { toast } = await import('sonner');
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {

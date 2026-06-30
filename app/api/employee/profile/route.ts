@@ -96,3 +96,42 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    await connectDB();
+
+    const token = request.cookies.get('accessToken')?.value;
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const decoded = verifyAccessToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    // Whitelist allowed fields
+    const updates: Record<string, any> = {};
+    if (body.firstName) updates.firstName = body.firstName;
+    if (body.lastName) updates.lastName = body.lastName;
+    if (body.phone !== undefined) updates.phone = body.phone;
+
+    const user = await User.findByIdAndUpdate(
+      decoded.userId,
+      { $set: updates },
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Profile updated', user });
+  } catch (error) {
+    console.error('[v0] Profile update error:', error);
+    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+  }
+}
