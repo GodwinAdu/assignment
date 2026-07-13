@@ -4,6 +4,9 @@ import { connectDB } from '@/lib/mongodb';
 import { hashPassword } from '@/lib/bcrypt';
 import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 import { z } from 'zod';
+import dns from 'dns';
+import { generateOTP, storeOTP } from '@/lib/otp';
+import { sendEmail, generateOTPEmail } from '@/lib/email';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -41,61 +44,49 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Verify domain has MX records (basic check for receiving mail servers)
+    const domain = email.split('@')[1];
+    try {
+      const mxRecords = await dns.promises.resolveMx(domain);
+      if (!mxRecords || mxRecords.length === 0) {
+        return NextResponse.json({ error: 'Email domain is not valid' }, { status: 400 });
+      }
+    } catch (err) {
+      console.error('[v0] MX lookup failed for domain:', domain, err);
+      return NextResponse.json({ error: 'Email domain is not valid' }, { status: 400 });
+    }
+
+    // Create user in unverified state until OTP is confirmed
     const user = new User({
       email: email.toLowerCase(),
       password: hashedPassword,
       firstName,
       lastName,
       role: 'employee',
+      isVerified: false,
     });
 
     await user.save();
 
-    // Generate tokens
-    const accessToken = generateAccessToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
+    const otp = generateOTP(6);
+    storeOTP(user.email, otp, 10);
+
+    const emailSent = await sendEmail({
+      to: user.email,
+      subject: 'Verify your email',
+      html: generateOTPEmail(otp, `${user.firstName}`),
     });
 
-    const refreshToken = generateRefreshToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    });
+    if (!emailSent) {
+      await User.deleteOne({ _id: user._id });
+      return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 });
+    }
 
-    // Set cookies
-    const response = NextResponse.json(
-      {
-        message: 'User registered successfully',
-        user: {
-          id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-        },
-      },
+    console.log('[v0] User registered (OTP sent):', user.email);
+    return NextResponse.json(
+      { message: 'User registered. OTP sent to email for verification.' },
       { status: 201 }
     );
-
-    response.cookies.set('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60, // 15 minutes
-    });
-
-    response.cookies.set('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    });
-
-    console.log('[v0] User registered:', user.email);
-    return response;
   } catch (error) {
     console.error('[v0] Registration error:', error);
     return NextResponse.json(

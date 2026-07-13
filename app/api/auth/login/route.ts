@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Check if user is verified
     if (!user.isVerified) {
       return NextResponse.json(
-        { error: 'Please verify your email first' },
+        { error: 'Please verify your email first. If you did not receive the code, request a new OTP via /api/auth/send-otp.' },
         { status: 403 }
       );
     }
