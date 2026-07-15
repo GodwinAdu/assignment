@@ -3,6 +3,9 @@ import nodemailer from 'nodemailer';
 const EMAIL_USER = process.env.EMAIL_USER || '';
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || '';
 
+console.log("EMAIL USER:", EMAIL_USER);
+console.log("PASSWORD EXISTS:", EMAIL_PASSWORD.length > 0);
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
